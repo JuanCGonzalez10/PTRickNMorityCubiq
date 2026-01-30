@@ -1,0 +1,10 @@
+wwwroot\css\app.css
+wwwroot\css\bootstrap\bootstrap.min.css
+wwwroot\css\bootstrap\bootstrap.min.css.map
+wwwroot\favicon.png
+wwwroot\icon-192.png
+wwwroot\images\dislike.png
+wwwroot\images\like.png
+wwwroot\images\VOTA-POR-TU-PERSONAJE-FAVORITO-30-1-2026_2.png
+wwwroot\index.html
+wwwroot\R_A_M.png

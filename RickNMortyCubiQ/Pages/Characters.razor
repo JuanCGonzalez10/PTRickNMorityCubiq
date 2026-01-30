@@ -1,0 +1,153 @@
+﻿@page "/"
+@inject HttpClient Http
+
+
+
+@using RickAndMortyBlazor.Models
+
+@* TITULO *@
+<div class="title-container">
+    <img src="images/VOTA-POR-TU-PERSONAJE-FAVORITO-30-1-2026_2.png" alt="Rick and Morty Title" class="VOTA-POR-TU-PERSONAJE-FAVORITO-30-1-2026_2" />
+</div>
+
+@* FILTROS *@
+<div class="row mb-4 justify-content-center">
+    <div class="col-md-3">
+
+
+        <input class="custom-input"
+               placeholder="Buscar por nombre"
+               @bind="filterName" />
+    </div>
+
+    <div class="col-md-3">
+
+        <input class="custom-input"
+               placeholder="Filtrar por especie"
+               @bind="filterSpecies" />
+    </div>
+
+    <div class="col-md-3">
+
+        <select class="custom-input" @bind="filterStatus">
+            <option value="">Todos</option>
+            <option value="Alive">Vivo</option>
+            <option value="Dead">Muerto</option>
+            <option value="unknown">Desconocido</option>
+        </select>
+    </div>
+</div>
+
+
+@* GRID *@
+
+<div class="grid">
+
+    @foreach (var character in FilteredCharacters)
+    {
+        <div class="card">
+            <img src="@character.Image" alt="@character.Name" />
+
+            <h3>@character.Name</h3>
+
+            <p class="status @character.Status">
+                Estado: @character.Status
+            </p>
+
+            <p>Especie: @character.Species</p>
+            <p>Genero: @character.Gender</p>
+
+            <div class="vote-buttons">
+                <button class="btn-image" @onclick="() => Vote(character, 1)">
+                    <img src="images/like.png" alt="Like" />
+                </button>
+                <button class="btn-image" @onclick="() => Vote(character, -1)">
+                    <img src="images/dislike.png" alt="Dislike" />
+                </button>
+            </div>
+
+            <p class="score">Puntaje: @character.Score</p>
+
+        </div>
+    }
+
+</div>
+
+@* PAGINACION
+ *@
+<div class="pagination">
+    <button @onclick="PrevPage">Anterior</button>
+    <span>Página @currentPage de @totalPages</span>
+    <button @onclick="NextPage">Siguiente</button>
+</div>
+
+
+
+@code {
+
+    List<Character> characters = new();
+    int currentPage = 1;
+    int totalPages;
+    string filterName = "";
+    string filterSpecies = "";
+    string filterStatus = "";
+
+    //METODO QUE CARGA LOS PERSONAJES AL INICIAR
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCharacters();
+    }
+
+    //METODO QUE TRAE A LOS PERSONAJES DE LA API
+    async Task LoadCharacters()
+    {
+        var response = await Http.GetFromJsonAsync<CharacterResponse>(
+            $"https://rickandmortyapi.com/api/character?page={currentPage}");
+        characters = response.Results;
+        totalPages = response.Info.Pages;
+
+    }
+
+    //METODOS PARA AVANZAR Y RETROCEDER PAGINAS
+    async Task NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            await LoadCharacters();
+        }
+    }
+
+    async Task PrevPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            await LoadCharacters();
+        }
+    }
+
+    //METODO PARA VOTAR
+
+    void Vote(Character character, int value)
+    {
+        character.Score += value;
+    }
+
+
+    //PROPIEDAD PARA FILTRAR PERSONAJES SEGUN CRITERIOS
+
+    IEnumerable<Character> FilteredCharacters => characters!
+        .Where(c =>
+            (string.IsNullOrWhiteSpace(filterName) ||
+             c.Name.Contains(filterName, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(filterSpecies) ||
+             c.Species.Contains(filterSpecies, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(filterStatus) ||
+             c.Status == filterStatus)
+        );
+
+}
+
+
